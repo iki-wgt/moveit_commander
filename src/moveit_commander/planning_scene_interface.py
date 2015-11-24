@@ -46,8 +46,8 @@ class PlanningSceneInterface(object):
     """ Simple interface to making updates to a planning scene """
 
     def __init__(self):
-        self._pub_co = rospy.Publisher('/collision_object', CollisionObject)
-        self._pub_aco = rospy.Publisher('/attached_collision_object', AttachedCollisionObject)
+        self._pub_co = rospy.Publisher('collision_object', CollisionObject, queue_size=10)
+        self._pub_aco = rospy.Publisher('attached_collision_object', AttachedCollisionObject, queue_size=10)
 
     def __make_sphere(self, name, pose, radius):
         co = CollisionObject()
@@ -63,7 +63,7 @@ class PlanningSceneInterface(object):
 
     def add_sphere(self, name, pose, radius = 1):
         """
-        Add a sphere to the planning scene 
+        Add a sphere to the planning scene
         """
         self._pub_co.publish(self.__make_sphere(name, pose, radius))
 
@@ -78,7 +78,7 @@ class PlanningSceneInterface(object):
         co.primitives = [box]
         co.primitive_poses = [pose.pose]
         return co
-    
+
     def __make_mesh(self, name, pose, filename, scale = (1, 1, 1)):
         co = CollisionObject()
         scene = pyassimp.load(filename)
@@ -87,7 +87,7 @@ class PlanningSceneInterface(object):
         co.operation = CollisionObject.ADD
         co.id = name
         co.header = pose.header
-        
+
         mesh = Mesh()
         for face in scene.meshes[0].faces:
             triangle = MeshTriangle()
@@ -104,10 +104,10 @@ class PlanningSceneInterface(object):
         co.mesh_poses = [pose.pose]
         pyassimp.release(scene)
         return co
-    
+
     def __make_existing(self, name):
         """
-        Create an empty Collision Object, used when the object already exists 
+        Create an empty Collision Object, used when the object already exists
         """
         co = CollisionObject()
         co.id = name
@@ -121,7 +121,7 @@ class PlanningSceneInterface(object):
 
     def add_box(self, name, pose, size = (1, 1, 1)):
         """
-        Add a box to the planning scene 
+        Add a box to the planning scene
         """
         self._pub_co.publish(self.__make_box(name, pose, size))
 
@@ -137,7 +137,7 @@ class PlanningSceneInterface(object):
         co.planes = [p]
         co.plane_poses = [pose.pose]
         self._pub_co.publish(co)
-        
+
     def attach_mesh(self, link, name, pose = None, filename = '', size = (1, 1, 1), touch_links = []):
         aco = AttachedCollisionObject()
         if pose!=None and not filename.empty():
@@ -165,7 +165,7 @@ class PlanningSceneInterface(object):
 
     def remove_world_object(self, name = None):
         """
-        Remove an object from planning scene, or all if no name is provided         
+        Remove an object from planning scene, or all if no name is provided
         """
         co = CollisionObject()
         co.operation = CollisionObject.REMOVE
@@ -175,7 +175,7 @@ class PlanningSceneInterface(object):
 
     def remove_attached_object(self, link, name = None):
         """
-        Remove an attached object from planning scene, or all objects attached to this link if no name is provided             
+        Remove an attached object from planning scene, or all objects attached to this link if no name is provided
         """
         aco = AttachedCollisionObject()
         aco.object.operation = CollisionObject.REMOVE
@@ -183,4 +183,3 @@ class PlanningSceneInterface(object):
         if name != None:
             aco.object.id = name
         self._pub_aco.publish(aco)
-
